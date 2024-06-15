@@ -1,8 +1,9 @@
 import tkinter as tk
-from tkinter import simpledialog, messagebox, Listbox, Scrollbar, Frame
+from tkinter import messagebox, Listbox, Scrollbar, Frame, ttk
 from controllers import add_task, list_tasks, remove_task, edit_task
 
 
+# Define a custom dialog class for adding and editing tasks
 class TaskDialog(tk.Toplevel):
     def __init__(self, parent, title=None, task=None):
         super().__init__(parent)
@@ -30,6 +31,7 @@ class TaskDialog(tk.Toplevel):
         self.initial_focus.focus_set()
         self.wait_window(self)
 
+    # Layout the body of the dialog, including input fields for task title and description
     def body(self, master):
         tk.Label(master, text="Title:").grid(row=0)
         self.title_entry = tk.Entry(master)
@@ -39,12 +41,14 @@ class TaskDialog(tk.Toplevel):
         self.description_entry = tk.Entry(master)
         self.description_entry.grid(row=1, column=1)
 
+        # Prefill fields if editing an existing task
         if self.task:
             self.title_entry.insert(0, self.task.title)
             self.description_entry.insert(0, self.task.description)
 
         return self.title_entry
 
+    # Add control buttons and define their behavior
     def buttonbox(self):
         box = tk.Frame(self)
 
@@ -58,14 +62,17 @@ class TaskDialog(tk.Toplevel):
 
         box.pack()
 
+    # Define action for OK button which includes validation and destruction of the dialog
     def ok(self, event=None):
         self.result = (self.title_entry.get(), self.description_entry.get())
         self.destroy()
 
+    # Cancel and close the dialog
     def cancel(self, event=None):
         self.destroy()
 
 
+# Function to refresh the list of tasks displayed in the main application window
 def refresh_task_list():
     tasks_listbox.delete(0, tk.END)
     tasks = list_tasks()
@@ -73,6 +80,7 @@ def refresh_task_list():
         tasks_listbox.insert(tk.END, f"{task.id}: {task.title}, {task.description}")
 
 
+# Define popup for adding new tasks using the custom dialog
 def add_task_popup():
     result = show_task_dialog(app, "Add Task")
     if result:
@@ -84,6 +92,7 @@ def add_task_popup():
             messagebox.showerror("Error", str(e))
 
 
+# Define popup for updating existing tasks
 def update_task_popup():
     selected = tasks_listbox.curselection()
     if selected:
@@ -99,6 +108,7 @@ def update_task_popup():
                 messagebox.showerror("Error", str(e))
 
 
+# Define popup for deleting tasks
 def delete_task_popup():
     selected = tasks_listbox.curselection()
     if selected:
@@ -110,14 +120,17 @@ def delete_task_popup():
             messagebox.showerror("Error", str(e))
 
 
+# Helper function to display the TaskDialog and return the result
 def show_task_dialog(parent, title, task=None):
     dialog = TaskDialog(parent, title, task)
     return dialog.result
 
 
+# Set up the main application window
 app = tk.Tk()
 app.title('Task Manager')
 
+# Set up the main frame and scrollbar for task list
 frame = Frame(app)
 scrollbar = Scrollbar(frame)
 tasks_listbox = Listbox(frame, yscrollcommand=scrollbar.set, width=50, height=10)
@@ -126,6 +139,7 @@ scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 tasks_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 frame.pack()
 
+# Add buttons for task operations
 add_button = tk.Button(app, text="Add Task", command=add_task_popup)
 add_button.pack(pady=5)
 
@@ -136,6 +150,8 @@ delete_button = tk.Button(app, text="Delete Task", command=delete_task_popup)
 delete_button.pack(pady=5)
 
 refresh_button = tk.Button(app, text="Refresh Tasks", command=refresh_task_list)
+refresh_button.pack(pady=5)
 
+# Initial refresh of the task list and start the main application loop
 refresh_task_list()
 app.mainloop()
